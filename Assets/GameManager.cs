@@ -28,12 +28,13 @@ public class GameManager : MonoBehaviour
         float random_spawn_y = Random.Range(min_y_spawn_angle, max_y_spawn_angle);
         float random_spawn_x = Random.Range(min_x_spawn_angle, max_x_spawn_angle);
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        // turn off gravity
+        cube.transform.parent = this.transform;
         Vector3 position = transform.position + transform.forward * random_distance;
         position.y += Mathf.Tan(random_spawn_y * Mathf.Deg2Rad) * random_distance;
         position.x += Mathf.Tan(random_spawn_x * Mathf.Deg2Rad) * random_distance;
         cube.transform.position = position;
         cube.AddComponent<Rigidbody>();
+        cube.GetComponent<Rigidbody>().useGravity = false;
         cube.GetComponent<Renderer>().material.color = Color.red;
         cube.AddComponent<VisualEffect>();
         objects.Add(cube);
@@ -45,7 +46,7 @@ public class GameManager : MonoBehaviour
         if (spawn_random)
         {
             spawn_timer += Time.deltaTime;
-            if (spawn_timer > 1f)
+            if (spawn_timer > 0.1f)
             {
                 SpawnRandom();
                 spawn_timer = 0f;
