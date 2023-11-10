@@ -1,56 +1,78 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.VFX;
 
 public class GameManager : MonoBehaviour
 {
-    public bool spawn_random = true;
-    float min_distance = 10f;
-    float max_distance = 20f;
-    float min_y_spawn_angle = -30f;
-    float max_y_spawn_angle = 30f;
-    float min_x_spawn_angle = -30f;
-    float max_x_spawn_angle = 30f;
-    float spawn_timer = 0f;
-
-    protected List<GameObject> objects = new List<GameObject>();
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public bool spawnRandom = true;
+    public float minDistance = 10f;
+    public float maxDistance = 20f;
+    public float minYSpawnAngle = -30f;
+    public float maxYSpawnAngle = 30f;
+    public float minXSpawnAngle = -90f;
+    public float maxXSpawnAngle = 90f;
+    public float spawnPeriod = 1.0f;
+    
+    private float _spawnTimer = 0f;
+    private HashSet<GameObject> _objects = new HashSet<GameObject>();
 
     void SpawnRandom()
     {
-        float random_distance = Random.Range(min_distance, max_distance);
-        float random_spawn_y = Random.Range(min_y_spawn_angle, max_y_spawn_angle);
-        float random_spawn_x = Random.Range(min_x_spawn_angle, max_x_spawn_angle);
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        float randomDistance = Random.Range(minDistance, maxDistance);
+        float randomSpawnY = Random.Range(minYSpawnAngle, maxYSpawnAngle);
+        float randomSpawnX = Random.Range(minXSpawnAngle, maxXSpawnAngle);
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         cube.transform.parent = this.transform;
-        Vector3 position = transform.position + transform.forward * random_distance;
-        position.y += Mathf.Tan(random_spawn_y * Mathf.Deg2Rad) * random_distance;
-        position.x += Mathf.Tan(random_spawn_x * Mathf.Deg2Rad) * random_distance;
+        Vector3 position = transform.position + transform.forward * randomDistance;
+        // rotate the position vector by the random angles
+        position = Quaternion.AngleAxis(randomSpawnY, transform.right) * position;
+        position = Quaternion.AngleAxis(randomSpawnX, transform.up) * position;
         cube.transform.position = position;
         cube.AddComponent<Rigidbody>();
         cube.GetComponent<Rigidbody>().useGravity = false;
         cube.GetComponent<Renderer>().material.color = Color.red;
         cube.AddComponent<VisualEffect>();
-        objects.Add(cube);
+        _objects.Add(cube);
     }
+
+    void CheckClick()
+    {
+        if (Input.GetMouseButtonDown(0)) // Check for left mouse button click
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit) && _objects.Contains(hit.collider.gameObject))
+            {
+                if (hit.collider.gameObject.GetComponent<Renderer>().material.color == Color.red)
+                {
+                    hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.green;
+                }
+                else
+                {
+                    hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.red;
+                }
+            }
+
+        }
+    }
+
 
     // Update is called once per frame
     void Update()
     {
-        if (spawn_random)
+        if (spawnRandom)
         {
-            spawn_timer += Time.deltaTime;
-            if (spawn_timer > 0.1f)
+            _spawnTimer += Time.deltaTime;
+            if (_spawnTimer > spawnPeriod)
             {
                 SpawnRandom();
-                spawn_timer = 0f;
+                _spawnTimer = 0f;
             }
         }
+        
+        CheckClick();
     }
 }
