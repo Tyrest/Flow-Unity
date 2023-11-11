@@ -9,7 +9,8 @@ public enum TargetScore
     Perfect,
     Great,
     Good,
-    Miss
+    Miss,
+    Empty
 }
 
 public class GameManager : MonoBehaviour

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ public class Target : MonoBehaviour
     private float _time = 0f;
     private bool _hit = false;
     private TargetScore _score = TargetScore.Miss;
+    private bool _pastPeak = false;
 
     void Start()
     {
@@ -58,49 +60,74 @@ public class Target : MonoBehaviour
         _originalScale = _childObject.transform.localScale;
     }
     
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, 0.1f);
+    }
+    
+    void TurnOffRenderer()
+    {
+        Renderer rendererComponent = target.GetComponent<MeshRenderer>();
+        rendererComponent.enabled = false;
+        Outline outlineComponent = _childObject.GetComponent<Outline>();
+        if (outlineComponent != null)
+        {
+            outlineComponent.enabled = false;
+        }
+
+        MeshRenderer meshRendererComponent = _childObject.GetComponent<MeshRenderer>();
+        if (meshRendererComponent != null)
+        {
+            meshRendererComponent.enabled = false;
+        }
+    }
+    
     IEnumerator FadeOutCoroutine(float fadeDuration)
     {
         Renderer rendererComponent = target.GetComponent<MeshRenderer>();
-
-        if (rendererComponent != null)
+        float startAlpha = rendererComponent.material.color.a;
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeDuration)
         {
-            float startAlpha = rendererComponent.material.color.a;
+            float newAlpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / fadeDuration);
+            Color newColor = rendererComponent.material.color;
+            newColor.a = newAlpha;
+            rendererComponent.material.color = newColor;
+            elapsedTime += Time.deltaTime;
             
-            float elapsedTime = 0f;
-            while (elapsedTime < fadeDuration)
-            {
-                float newAlpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / fadeDuration);
-                Color newColor = rendererComponent.material.color;
-                newColor.a = newAlpha;
-                rendererComponent.material.color = newColor;
-                elapsedTime += Time.deltaTime;
-                
-                _childObject.GetComponent<Outline>().OutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha);
+            _childObject.GetComponent<Outline>().OutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha);
 
-                yield return null;
-            }
-            
-            // turn off the renderer
-            rendererComponent.enabled = false;
-            _childObject.GetComponent<Outline>().enabled = false;
-            _childObject.GetComponent<MeshRenderer>().enabled = false;
-            
-            // rotate to face the camera
-            GameObject text = Instantiate(scoreText);
-            text.transform.parent = transform;
-            text.transform.localPosition = Vector3.zero;
-            text.transform.LookAt(Vector3.zero, Vector3.up);
-            text.transform.Rotate(0f, 180f, 0f);
-            
-            while (elapsedTime < fadeDuration + 0.5f)
-            {
-                elapsedTime += Time.deltaTime; 
-                yield return null;
-            }
+            yield return null;
         }
-        else
+        
+        TurnOffRenderer();
+        
+        if (!_hit)
         {
-            Debug.LogError("Object does not have a Renderer component.");
+            StartCoroutine(DisplayScoreCoroutine());
+        }
+    }
+    
+    IEnumerator DisplayScoreCoroutine()
+    {
+        GameObject text = Instantiate(scoreText, transform, true);
+        TextMeshPro textTMP = text.GetComponent<TextMeshPro>();
+        textTMP.text = _score.ToString();
+        text.transform.localPosition = Vector3.zero;
+        text.transform.LookAt(Vector3.zero, Vector3.up);
+        text.transform.Rotate(0f, 180f, 0f);
+        
+        Color textColor = textTMP.color;
+        Color clearColor = new Color(textColor.r, textColor.g, textColor.b, 0f);
+        
+        float elapsedTime = 0f;
+        while (elapsedTime < 0.5f)
+        {
+            text.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, (float) Math.Exp(-Math.Pow(2 * (elapsedTime - 0.25f), 2)));
+            textTMP.color = Color.Lerp(clearColor, textColor, (float) Math.Exp(-Math.Pow(4 * (elapsedTime - 0.25f), 4)));
+            elapsedTime += Time.deltaTime; 
+            yield return null;
         }
         
         Destroy(gameObject);
@@ -108,12 +135,11 @@ public class Target : MonoBehaviour
 
     public TargetScore Hit()
     {
-        if (_hit)
+        if (_hit || _time > goodThreshold + scalePeriod)
         {
-            return 0;
+            return TargetScore.Empty;
         }
         _hit = true;
-        StartCoroutine(FadeOutCoroutine(0f));
         switch (Mathf.Abs(_time - scalePeriod))
         {
             case float n when n < perfectThreshold:
@@ -129,6 +155,8 @@ public class Target : MonoBehaviour
                 _score = TargetScore.Miss;
                 break;
         }
+        TurnOffRenderer();
+        StartCoroutine(DisplayScoreCoroutine());
         return _score;
     }
 
@@ -142,12 +170,13 @@ public class Target : MonoBehaviour
                 _childObject.transform.localScale = scaleValue;
                 Color outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
                 _childObject.GetComponent<Outline>().OutlineColor = outlineColorValue;
-                _time += Time.deltaTime;
             }
-            else
+            else if (!_pastPeak)
             {
+                _pastPeak = true;
                 StartCoroutine(FadeOutCoroutine(goodThreshold));
             }
         }
+        _time += Time.deltaTime;
     }
 }
