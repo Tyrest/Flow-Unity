@@ -15,6 +15,7 @@ public enum TargetScore
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
     public HUD hud;
     public GameObject targetPrefab;
     public bool spawnRandom = true;
