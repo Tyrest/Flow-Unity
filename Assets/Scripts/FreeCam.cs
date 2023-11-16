@@ -46,7 +46,7 @@ public class FreeCam : MonoBehaviour
         {
             t.position -= t.up * Time.deltaTime * 10f;
         }
-        
+
         transform.position = t.position;
     }
 

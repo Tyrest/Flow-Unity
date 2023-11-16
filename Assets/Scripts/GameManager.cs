@@ -16,6 +16,21 @@ public enum TargetScore
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+
+    private const float MaxDistance = 100f;
+
+    private readonly Dictionary<TargetScore, int> _scoreMapping = new Dictionary<TargetScore, int>
+    {
+        { TargetScore.Perfect, 300 },
+        { TargetScore.Great, 200 },
+        { TargetScore.Good, 100 },
+        { TargetScore.Miss, 0 },
+        { TargetScore.Empty, 0 }
+    };
+
+    public AudioSource audioSource;
+    public VisualEffect explosion;
+
     public HUD hud;
     public GameObject targetPrefab;
     public bool spawnRandom = true;
@@ -26,65 +41,59 @@ public class GameManager : MonoBehaviour
     public float minXSpawnAngle = -90f;
     public float maxXSpawnAngle = 90f;
     public float spawnPeriod = 1.0f;
-    public int perfectScore = 300;
-    public int greatScore = 200;
-    public int goodScore = 100;
-    public int missScore = 0;
-    
+
+    private Camera _mainCamera;
     private float _spawnTimer = 0f;
 
     private int _score = 0;
-    // private HashSet<GameObject> _objects = new HashSet<GameObject>();
 
-    void SpawnRandom()
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+    }
+
+    private void Start()
+    {
+        _mainCamera = Camera.main;
+        hud.UpdateScore(_score);
+    }
+
+    private void SpawnRandom()
     {
         var randomDistance = Random.Range(minDistance, maxDistance);
         var randomSpawnY = Random.Range(minYSpawnAngle, maxYSpawnAngle);
         var randomSpawnX = Random.Range(minXSpawnAngle, maxXSpawnAngle);
         var target = Instantiate(targetPrefab, this.transform);
-        Vector3 position = transform.position + transform.forward * randomDistance;
-        // rotate the position vector by the random angles
-        position = Quaternion.AngleAxis(randomSpawnY, transform.right) * position;
-        position = Quaternion.AngleAxis(randomSpawnX, transform.up) * position;
+
+        var t = transform;
+        Vector3 position = t.position + t.forward * randomDistance;
+        position = Quaternion.AngleAxis(randomSpawnY, t.right) * position;
+        position = Quaternion.AngleAxis(randomSpawnX, t.up) * position;
         target.transform.position = position;
-        // _objects.Add(cube);
     }
 
-    void CheckClick()
+    private void CheckClick()
     {
-        if (Input.GetMouseButtonDown(0)) // Check for left mouse button click
+        if (!Input.GetMouseButtonDown(0))
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.GetComponentInParent<Target>() != null)
-            {
-                TargetScore score = hit.collider.gameObject.GetComponentInParent<Target>().Hit();
-                switch (score)
-                {
-                    case TargetScore.Perfect:
-                        _score += perfectScore;
-                        break;
-                    case TargetScore.Great:
-                        _score += greatScore;
-                        break;
-                    case TargetScore.Good:
-                        _score += goodScore;
-                        break;
-                    case TargetScore.Miss:
-                        _score += missScore;
-                        break;
-                }
-                Debug.Log("Accuracy: " + score + "\nScore: " + _score);
-                hud.UpdateScore(_score);
-            }
-
+            return;
         }
+
+        var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(ray, out var hit, MaxDistance, LayerMask.GetMask("Target")) ||
+            !hit.collider.gameObject.transform.parent.TryGetComponent(out Target target))
+        {
+            return;
+        }
+
+        _score += _scoreMapping[target.Hit()];
+        hud.UpdateScore(_score);
     }
-
-
-    // Update is called once per frame
-    void Update()
+    
+    private void Update()
     {
         if (spawnRandom)
         {
@@ -95,7 +104,7 @@ public class GameManager : MonoBehaviour
                 _spawnTimer = 0f;
             }
         }
-        
+
         CheckClick();
     }
 }
