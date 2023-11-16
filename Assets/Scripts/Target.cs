@@ -23,18 +23,18 @@ public class Target : MonoBehaviour
     private bool _hit;
     private TargetScore _score = TargetScore.Miss;
     private bool _pastPeak;
-    
+
     private MeshRenderer _targetMeshRenderer;
     private MeshRenderer _childMeshRenderer;
     private Outline _childOutline;
-    
+
     private void Awake()
     {
         _targetMeshRenderer = target.GetComponent<MeshRenderer>();
         _startingOutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, 0.0f);
         // Create a child object with a MeshFilter
         CreateChildObject();
-        
+
         _time = 0.0f;
     }
 
@@ -60,7 +60,7 @@ public class Target : MonoBehaviour
         outline.OutlineMode = Outline.Mode.OutlineAll;
         outline.OutlineColor = _startingOutlineColor;
         outline.OutlineWidth = 5f;
-        
+
         _childMeshRenderer = _childObject.GetComponent<MeshRenderer>();
         _childOutline = _childObject.GetComponent<Outline>();
     }
@@ -143,37 +143,30 @@ public class Target : MonoBehaviour
         }
 
         _hit = true;
-        switch (Mathf.Abs(_time - scalePeriod))
+        _score = Mathf.Abs(_time - scalePeriod) switch
         {
-            case var n when n < perfectThreshold:
-                _score = TargetScore.Perfect;
-                break;
-            case var n when n < greatThreshold:
-                _score = TargetScore.Great;
-                break;
-            case var n when n < goodThreshold:
-                _score = TargetScore.Good;
-                break;
-            default:
-                _score = TargetScore.Miss;
-                break;
-        }
+            var n when n < perfectThreshold => TargetScore.Perfect,
+            var n when n < greatThreshold => TargetScore.Great,
+            var n when n < goodThreshold => TargetScore.Good,
+            _ => TargetScore.Miss
+        };
+
 
         TurnOffRenderer();
         StartCoroutine(DisplayScoreCoroutine());
         return _score;
     }
 
-    void Update()
+    private void Update()
     {
         if (!_hit)
         {
             if (_time < scalePeriod)
             {
-                Vector3 scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
+                var scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
                 _childObject.transform.localScale = scaleValue;
-                Color outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
-                _childObject.GetComponent<Outline>().OutlineColor = outlineColorValue;
+                var outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
+                _childOutline.OutlineColor = outlineColorValue;
             }
             else if (!_pastPeak)
             {

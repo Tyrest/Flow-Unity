@@ -7,13 +7,13 @@ public class HUD : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;
 
-    void Start()
+    private void Start()
     {
         scoreText.text = "0";
     }
 
     public void UpdateScore(int score)
     {
-        scoreText.text = string.Format("{0}", score);
+        scoreText.text = $"{score}";
     }
 }

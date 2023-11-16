@@ -29,10 +29,7 @@ public class SongManager : MonoBehaviour
 
     private void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-        }
+        _instance = this;
     }
 
     private void Start()

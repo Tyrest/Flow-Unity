@@ -15,7 +15,20 @@ public enum TargetScore
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    private static GameManager _instance;
+
+    public static GameManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<GameManager>();
+            }
+
+            return _instance;
+        }
+    }
 
     private const float MaxDistance = 100f;
 
@@ -43,16 +56,13 @@ public class GameManager : MonoBehaviour
     public float spawnPeriod = 1.0f;
 
     private Camera _mainCamera;
-    private float _spawnTimer = 0f;
+    private float _spawnTimer;
 
-    private int _score = 0;
+    private int _score;
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
+        _instance = this;
     }
 
     private void Start()
@@ -69,7 +79,7 @@ public class GameManager : MonoBehaviour
         var target = Instantiate(targetPrefab, this.transform);
 
         var t = transform;
-        Vector3 position = t.position + t.forward * randomDistance;
+        var position = t.position + t.forward * randomDistance;
         position = Quaternion.AngleAxis(randomSpawnY, t.right) * position;
         position = Quaternion.AngleAxis(randomSpawnX, t.up) * position;
         target.transform.position = position;
@@ -92,7 +102,7 @@ public class GameManager : MonoBehaviour
         _score += _scoreMapping[target.Hit()];
         hud.UpdateScore(_score);
     }
-    
+
     private void Update()
     {
         if (spawnRandom)

@@ -19,7 +19,7 @@ public class BeatMap
 
     public BeatMap(string path)
     {
-        this._path = path;
+        _path = path;
     }
 
     // Get the difficulty from the file name
@@ -29,7 +29,7 @@ public class BeatMap
     }
 
     // Parse a line from the file into a beat
-    private Beat? ReadLine(string line)
+    private static Beat? ReadLine(string line)
     {
         var beatMapData = line.Split(',');
         if (beatMapData.Length != 3)
