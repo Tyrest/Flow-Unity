@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7127289035006303771}
   - component: {fileID: 6337602842856770401}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Target
-  m_TagString: Untagged
+  m_TagString: Target
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -65,7 +65,7 @@ GameObject:
   - component: {fileID: 8503575283500795190}
   - component: {fileID: 2832469213573340234}
   - component: {fileID: 4648677422965093551}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -13,7 +13,7 @@ public class SongManager : MonoBehaviour
     public int currentSongIndex;
 
     private static SongManager _instance;
-    
+
     public static SongManager Instance
     {
         get
@@ -22,16 +22,14 @@ public class SongManager : MonoBehaviour
             {
                 _instance = FindObjectOfType<SongManager>();
             }
+
             return _instance;
         }
     }
 
     private void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-        }
+        _instance = this;
     }
 
     private void Start()
@@ -46,6 +44,8 @@ public class SongManager : MonoBehaviour
             .Select(songPath => new Song(songPath))
             .ToList();
         return;
-        IEnumerable<string> GetSubdirectories(string songDirectory) => Directory.GetDirectories(songDirectory);
+
+        IEnumerable<string> GetSubdirectories(string songDirectory) =>
+            Directory.GetDirectories(Path.Combine(songDirectory.Split('/')));
     }
 }

@@ -18,118 +18,120 @@ public class Target : MonoBehaviour
     public Color outlineColor = Color.white;
 
     private GameObject _childObject;
-    private Vector3 _originalScale;
     private Color _startingOutlineColor;
-    private float _time = 0f;
-    private bool _hit = false;
+    private float _time;
+    private bool _hit;
     private TargetScore _score = TargetScore.Miss;
-    private bool _pastPeak = false;
+    private bool _pastPeak;
 
-    void Start()
+    private MeshRenderer _targetMeshRenderer;
+    private MeshRenderer _childMeshRenderer;
+    private Outline _childOutline;
+
+    private void Awake()
     {
+        _targetMeshRenderer = target.GetComponent<MeshRenderer>();
         _startingOutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, 0.0f);
         // Create a child object with a MeshFilter
         CreateChildObject();
+
         _time = 0.0f;
     }
 
-    void CreateChildObject()
+    private void CreateChildObject()
     {
         // Create a child GameObject
-        _childObject = new GameObject("TimingObject");
-        _childObject.transform.parent = target.transform; // Make it a child of the current GameObject
-        _childObject.transform.localPosition = Vector3.zero;
-        
-        MeshFilter meshFilter = _childObject.AddComponent<MeshFilter>();
+        _childObject = new GameObject("TimingObject")
+            { transform = { parent = target.transform, localPosition = Vector3.zero } };
+
+        var meshFilter = _childObject.AddComponent<MeshFilter>();
         meshFilter.mesh = target.GetComponent<MeshFilter>().sharedMesh;
-        
-        MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-        Color color = target.GetComponent<MeshRenderer>().sharedMaterial.color;
+
+        var mpb = new MaterialPropertyBlock();
+        var color = target.GetComponent<MeshRenderer>().sharedMaterial.color;
         color.a = 0.0f;
-        mpb.SetColor("_Color", color);
-        
-        MeshRenderer meshRenderer = _childObject.AddComponent<MeshRenderer>();
+        mpb.SetColor(Shader.PropertyToID("_Color"), color);
+
+        var meshRenderer = _childObject.AddComponent<MeshRenderer>();
         meshRenderer.material = target.GetComponent<MeshRenderer>().sharedMaterial;
         meshRenderer.SetPropertyBlock(mpb);
-        
+
         var outline = _childObject.AddComponent<Outline>();
         outline.OutlineMode = Outline.Mode.OutlineAll;
         outline.OutlineColor = _startingOutlineColor;
         outline.OutlineWidth = 5f;
-        
-        _originalScale = _childObject.transform.localScale;
+
+        _childMeshRenderer = _childObject.GetComponent<MeshRenderer>();
+        _childOutline = _childObject.GetComponent<Outline>();
     }
-    
-    void OnDrawGizmos()
+
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, 0.1f);
     }
-    
-    void TurnOffRenderer()
+
+    private void TurnOffRenderer()
     {
-        Renderer rendererComponent = target.GetComponent<MeshRenderer>();
-        rendererComponent.enabled = false;
-        Outline outlineComponent = _childObject.GetComponent<Outline>();
-        if (outlineComponent != null)
+        if (_targetMeshRenderer)
         {
-            outlineComponent.enabled = false;
+            _targetMeshRenderer.enabled = false;
         }
 
-        MeshRenderer meshRendererComponent = _childObject.GetComponent<MeshRenderer>();
-        if (meshRendererComponent != null)
+        if (_childMeshRenderer)
         {
-            meshRendererComponent.enabled = false;
+            _childMeshRenderer.enabled = false;
         }
     }
-    
-    IEnumerator FadeOutCoroutine(float fadeDuration)
+
+    private IEnumerator FadeOutCoroutine(float fadeDuration)
     {
-        Renderer rendererComponent = target.GetComponent<MeshRenderer>();
-        float startAlpha = rendererComponent.material.color.a;
-        float elapsedTime = 0f;
+        var startAlpha = _targetMeshRenderer.material.color.a;
+        var elapsedTime = 0f;
         while (elapsedTime < fadeDuration)
         {
-            float newAlpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / fadeDuration);
-            Color newColor = rendererComponent.material.color;
-            newColor.a = newAlpha;
-            rendererComponent.material.color = newColor;
+            var newAlpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / fadeDuration);
+            var m = _targetMeshRenderer.material;
+            m.color = new Color(m.color.r, m.color.g, m.color.b, newAlpha);
+
             elapsedTime += Time.deltaTime;
-            
-            _childObject.GetComponent<Outline>().OutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha);
+
+            _childOutline.OutlineColor =
+                new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha);
 
             yield return null;
         }
-        
+
         TurnOffRenderer();
-        
+
         if (!_hit)
         {
             StartCoroutine(DisplayScoreCoroutine());
         }
     }
-    
-    IEnumerator DisplayScoreCoroutine()
+
+    private IEnumerator DisplayScoreCoroutine()
     {
-        GameObject text = Instantiate(scoreText, transform, true);
-        TextMeshPro textTMP = text.GetComponent<TextMeshPro>();
+        var text = Instantiate(scoreText, transform, true);
+        var textTMP = text.GetComponent<TextMeshPro>();
         textTMP.text = _score.ToString();
         text.transform.localPosition = Vector3.zero;
         text.transform.LookAt(Vector3.zero, Vector3.up);
         text.transform.Rotate(0f, 180f, 0f);
-        
-        Color textColor = textTMP.color;
-        Color clearColor = new Color(textColor.r, textColor.g, textColor.b, 0f);
-        
-        float elapsedTime = 0f;
+
+        var textColor = textTMP.color;
+        var clearColor = new Color(textColor.r, textColor.g, textColor.b, 0f);
+
+        var elapsedTime = 0f;
         while (elapsedTime < 0.5f)
         {
-            text.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, (float) Math.Exp(-Math.Pow(2 * (elapsedTime - 0.25f), 2)));
-            textTMP.color = Color.Lerp(clearColor, textColor, (float) Math.Exp(-Math.Pow(4 * (elapsedTime - 0.25f), 4)));
-            elapsedTime += Time.deltaTime; 
+            text.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one,
+                (float)Math.Exp(-Math.Pow(2 * (elapsedTime - 0.25f), 2)));
+            textTMP.color = Color.Lerp(clearColor, textColor, (float)Math.Exp(-Math.Pow(4 * (elapsedTime - 0.25f), 4)));
+            elapsedTime += Time.deltaTime;
             yield return null;
         }
-        
+
         Destroy(gameObject);
     }
 
@@ -139,37 +141,32 @@ public class Target : MonoBehaviour
         {
             return TargetScore.Empty;
         }
+
         _hit = true;
-        switch (Mathf.Abs(_time - scalePeriod))
+        _score = Mathf.Abs(_time - scalePeriod) switch
         {
-            case float n when n < perfectThreshold:
-                _score = TargetScore.Perfect;
-                break;
-            case float n when n < greatThreshold:
-                _score = TargetScore.Great;
-                break;
-            case float n when n < goodThreshold:
-                _score = TargetScore.Good;
-                break;
-            default:
-                _score = TargetScore.Miss;
-                break;
-        }
+            var n when n < perfectThreshold => TargetScore.Perfect,
+            var n when n < greatThreshold => TargetScore.Great,
+            var n when n < goodThreshold => TargetScore.Good,
+            _ => TargetScore.Miss
+        };
+
+
         TurnOffRenderer();
         StartCoroutine(DisplayScoreCoroutine());
         return _score;
     }
 
-    void Update()
+    private void Update()
     {
         if (!_hit)
         {
             if (_time < scalePeriod)
             {
-                Vector3 scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
+                var scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
                 _childObject.transform.localScale = scaleValue;
-                Color outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
-                _childObject.GetComponent<Outline>().OutlineColor = outlineColorValue;
+                var outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
+                _childOutline.OutlineColor = outlineColorValue;
             }
             else if (!_pastPeak)
             {
@@ -177,6 +174,7 @@ public class Target : MonoBehaviour
                 StartCoroutine(FadeOutCoroutine(goodThreshold));
             }
         }
+
         _time += Time.deltaTime;
     }
 }
