@@ -1,42 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
-
-public struct Beat
-{
-    public float beatTime;
-    public int beatType;
-    public int beatLane;
-}
 
 // Class to load and the store the information for a beatMap
 public class Song
 {
-    public const string InfoPath = @"\info.txt";
-    public const string AudioPath = @"\audio.ogg";
+    private const string InfoPath = "info.txt";
+    private const string AudioPath = "audio.ogg";
 
-    public string path;
-    public string title;
-    public string artist;
-    public string mapper;
-    public float bpm;
-    public float offset;
+    private readonly string _path;
+    public string Title { get; private set; }
+    public string Artist { get; private set; }
+    public string Mapper { get; private set; }
+    public float Bpm { get; private set; }
+    public float Offset { get; private set; }
 
-    private AudioClip audio;
-    private List<BeatMap> songBeatMaps;
+    private AudioClip _audio;
+    private List<BeatMap> _songBeatMaps;
 
     public Song(string path)
     {
         Debug.Log(path);
-        this.path = path;
+        this._path = path;
         LoadSongInfo();
     }
 
     private void LoadSongInfo()
     {
-        Debug.Log(path + InfoPath);
-        var songInfoLines = File.ReadAllLines(path + InfoPath);
+        Debug.Log(Path.Combine(_path, InfoPath));
+        var songInfoLines = File.ReadAllLines(Path.Combine(_path, InfoPath));
         foreach (string line in songInfoLines)
         {
             var songInfoData = line.Split(':');
@@ -45,22 +39,51 @@ public class Song
                 switch (songInfoData[0])
                 {
                     case "Title":
-                        title = songInfoData[1];
+                        Title = songInfoData[1];
                         break;
                     case "Artist":
-                        artist = songInfoData[1];
+                        Artist = songInfoData[1];
                         break;
                     case "Mapper":
-                        mapper = songInfoData[1];
+                        Mapper = songInfoData[1];
                         break;
                     case "BPM":
-                        bpm = float.Parse(songInfoData[1]);
+                        Bpm = float.Parse(songInfoData[1]);
                         break;
                     case "Offset":
-                        offset = float.Parse(songInfoData[1]);
+                        Offset = float.Parse(songInfoData[1]);
                         break;
                 }
             }
         }
+    }
+
+    public AudioClip GetAudio()
+    {
+        if (_audio == null)
+        {
+            _audio = Resources.Load<AudioClip>(Path.Combine(_path, AudioPath));
+        }
+
+        return _audio;
+    }
+
+    // Lazy load the beat maps
+    private IEnumerable<BeatMap> GetBeatMaps()
+    {
+        _songBeatMaps ??= Directory.GetFiles(_path, "*.txt")
+            .Select(beatMapFile => new BeatMap(beatMapFile))
+            .ToList();
+        return _songBeatMaps;
+    }
+
+    public List<string> GetDifficulties()
+    {
+        return GetBeatMaps().Select(beatMap => beatMap.GetDifficulty()).ToList();
+    }
+
+    public BeatMap GetBeatMap(string difficulty)
+    {
+        return GetBeatMaps().FirstOrDefault(beatMap => beatMap.GetDifficulty() == difficulty);
     }
 }

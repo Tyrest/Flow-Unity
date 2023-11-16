@@ -4,52 +4,61 @@ using UnityEngine;
 
 public class FreeCam : MonoBehaviour
 {
-    float rotationX = 0f;
-    float rotationY = 0f;
     public float sensitivity = 1f;
+    private float _rotationX = 0f;
+    private float _rotationY = 0f;
 
-    void Start()
+    private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    void Move()
+    private void Move()
     {
+        var t = transform;
         if (Input.GetKey(KeyCode.W))
         {
-            transform.position += transform.forward * Time.deltaTime * 10f;
+            t.position += t.forward * Time.deltaTime * 10f;
         }
+
         if (Input.GetKey(KeyCode.S))
         {
-            transform.position -= transform.forward * Time.deltaTime * 10f;
+            t.position -= t.forward * Time.deltaTime * 10f;
         }
+
         if (Input.GetKey(KeyCode.A))
         {
-            transform.position -= transform.right * Time.deltaTime * 10f;
+            t.position -= t.right * Time.deltaTime * 10f;
         }
+
         if (Input.GetKey(KeyCode.D))
         {
-            transform.position += transform.right * Time.deltaTime * 10f;
+            t.position += t.right * Time.deltaTime * 10f;
         }
+
         if (Input.GetKey(KeyCode.Space))
         {
-            transform.position += transform.up * Time.deltaTime * 10f;
+            t.position += t.up * Time.deltaTime * 10f;
         }
+
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            transform.position -= transform.up * Time.deltaTime * 10f;
+            t.position -= t.up * Time.deltaTime * 10f;
         }
+        
+        transform.position = t.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        rotationX += Input.GetAxis("Mouse X") * sensitivity;
-        rotationY += Input.GetAxis("Mouse Y") * sensitivity;
-        rotationY = Mathf.Clamp(rotationY, -90f, 90f);
+        _rotationX += Input.GetAxis("Mouse X") * sensitivity;
+        _rotationY += Input.GetAxis("Mouse Y") * sensitivity;
+        _rotationY = Mathf.Clamp(_rotationY, -90f, 90f);
 
-        transform.localRotation = Quaternion.AngleAxis(rotationX, Vector3.up);
-        transform.localRotation *= Quaternion.AngleAxis(rotationY, Vector3.left);
+        var t = Quaternion.AngleAxis(_rotationX, Vector3.up);
+        t *= Quaternion.AngleAxis(_rotationY, Vector3.left);
+        transform.localRotation = t;
     }
 }

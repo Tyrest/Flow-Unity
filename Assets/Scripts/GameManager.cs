@@ -38,11 +38,10 @@ public class GameManager : MonoBehaviour
 
     void SpawnRandom()
     {
-        float randomDistance = Random.Range(minDistance, maxDistance);
-        float randomSpawnY = Random.Range(minYSpawnAngle, maxYSpawnAngle);
-        float randomSpawnX = Random.Range(minXSpawnAngle, maxXSpawnAngle);
-        GameObject target = Instantiate(targetPrefab);
-        target.transform.parent = this.transform;
+        var randomDistance = Random.Range(minDistance, maxDistance);
+        var randomSpawnY = Random.Range(minYSpawnAngle, maxYSpawnAngle);
+        var randomSpawnX = Random.Range(minXSpawnAngle, maxXSpawnAngle);
+        var target = Instantiate(targetPrefab, this.transform);
         Vector3 position = transform.position + transform.forward * randomDistance;
         // rotate the position vector by the random angles
         position = Quaternion.AngleAxis(randomSpawnY, transform.right) * position;
