@@ -32,18 +32,14 @@ public class SongManager : MonoBehaviour
         _instance = this;
     }
 
-    private void Start()
+    public List<Song> GetSongs()
     {
-        LoadSongs();
-    }
-
-    private void LoadSongs()
-    {
-        songs = songDirectories
+        songs ??= songDirectories
             .SelectMany(GetSubdirectories)
             .Select(songPath => new Song(songPath))
+            .OrderBy(song => song.Title)
             .ToList();
-        return;
+        return songs;
 
         IEnumerable<string> GetSubdirectories(string songDirectory) =>
             Directory.GetDirectories(Path.Combine(songDirectory.Split('/')));

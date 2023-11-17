@@ -42,7 +42,6 @@ public class GameManager : MonoBehaviour
     };
 
     public AudioSource audioSource;
-    public VisualEffect explosion;
 
     public HUD hud;
     public GameObject targetPrefab;
