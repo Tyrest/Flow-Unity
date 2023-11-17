@@ -20,18 +20,23 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    public float SongButtonOffset
+    {
+        get => _songButtonOffset;
+        set => _songButtonOffset = Mathf.Clamp(value, -0.5f, _songButtons.Count - 0.5f);
+    }
+
     public GameObject buttonPrefab;
     public GameObject quitButton;
     public GameObject optionsButton;
     public GameObject startButton;
     private List<GameObject> _songButtons;
-    private int _currentSongIndex;
+    private float _songButtonOffset;
 
     private void Awake()
     {
         _instance = this;
         _songButtons = new List<GameObject>();
-        _currentSongIndex = 0;
     }
 
     private void Start()
@@ -56,10 +61,62 @@ public class MenuManager : MonoBehaviour
             button.gameObject.SetActive(true);
             _songButtons.Add(button);
         });
+        _songButtonOffset = 0;
     }
 
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    private void HandleSongButtons()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            SongButtonOffset += -1f;
+        }
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            SongButtonOffset += 1f;
+        }
+
+        SongButtonOffset += Input.GetAxis("Mouse ScrollWheel");
+        
+        // Lerp SongButtonOffset to nearest integer
+        SongButtonOffset = Mathf.Lerp(SongButtonOffset, Mathf.Round(SongButtonOffset), Time.deltaTime * 10f);
+
+        var targetY = SongButtonOffset * 3;
+        for (var i = 0; i < _songButtons.Count; i++)
+        {
+            // Animate song buttons to target position
+            var button = _songButtons[i];
+            button.transform.localPosition = Vector3.Lerp(button.transform.localPosition,
+                new Vector3(0, targetY - i * 3, 0), Time.deltaTime * 10f);
+            
+            // Turn on outline if button is selected
+            button.TryGetComponent<SongTarget>(out var songTarget);
+            songTarget.ToggleOutline(i == Mathf.RoundToInt(SongButtonOffset));
+        }
+    }
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleButtons(true);
+            _songButtons.ForEach(Destroy);
+            _songButtons.Clear();
+        }
+
+        HandleSongButtons();
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            SongManager.Instance.currentSongIndex = _songButtons.Count - 1 - (int)_songButtonOffset;
+            SongManager.Instance.currentSong = SongManager.Instance.GetSongs()[SongManager.Instance.currentSongIndex];
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Game");
+        }
     }
 }

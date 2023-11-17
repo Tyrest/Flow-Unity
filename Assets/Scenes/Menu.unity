@@ -616,7 +616,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 307f192c537664c0798c15e38064dd81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buttonPrefab: {fileID: 4597738700269411933, guid: 7791f7a96d9783e44b25ebe473a8bb4f, type: 3}
+  buttonPrefab: {fileID: 1562104695325568700, guid: b1127b4b6540546e9923f7f62fcb6b89, type: 3}
   quitButton: {fileID: 1152159887}
   optionsButton: {fileID: 1510561325}
   startButton: {fileID: 1482675921}
