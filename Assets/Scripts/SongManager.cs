@@ -7,18 +7,13 @@ using UnityEngine;
 
 public class SongManager : MonoBehaviour
 {
-    public List<string> songDirectories;
-    public List<Song> songs;
-    public Song currentSong;
-    public int currentSongIndex;
-
     private static SongManager _instance;
 
     public static SongManager Instance
     {
         get
         {
-            if (_instance == null)
+            if (!_instance)
             {
                 _instance = FindObjectOfType<SongManager>();
             }
@@ -27,6 +22,12 @@ public class SongManager : MonoBehaviour
         }
     }
 
+    public List<string> songDirectories;
+    public Song currentSong;
+    public int currentSongIndex;
+
+    private List<Song> _songs;
+
     private void Awake()
     {
         _instance = this;
@@ -34,12 +35,12 @@ public class SongManager : MonoBehaviour
 
     public List<Song> GetSongs()
     {
-        songs ??= songDirectories
+        _songs ??= songDirectories
             .SelectMany(GetSubdirectories)
             .Select(songPath => new Song(songPath))
             .OrderBy(song => song.Title)
             .ToList();
-        return songs;
+        return _songs;
 
         IEnumerable<string> GetSubdirectories(string songDirectory) =>
             Directory.GetDirectories(Path.Combine(songDirectory.Split('/')));

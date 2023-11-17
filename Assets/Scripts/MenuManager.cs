@@ -20,7 +20,7 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    public float SongButtonOffset
+    private float SongButtonOffset
     {
         get => _songButtonOffset;
         set => _songButtonOffset = Mathf.Clamp(value, -0.5f, _songButtons.Count - 0.5f);
@@ -39,10 +39,6 @@ public class MenuManager : MonoBehaviour
         _songButtons = new List<GameObject>();
     }
 
-    private void Start()
-    {
-    }
-
     private void ToggleButtons(bool toggle)
     {
         quitButton.gameObject.SetActive(toggle);
@@ -56,7 +52,7 @@ public class MenuManager : MonoBehaviour
         SongManager.Instance.GetSongs().ForEach(song =>
         {
             var button = Instantiate(buttonPrefab, transform);
-            button.transform.localPosition += Vector3.down * ((_songButtons.Count) * 3);
+            button.transform.localPosition += Vector3.down * (_songButtons.Count * 3);
             button.GetComponentInChildren<TMPro.TextMeshPro>().text = song.Title;
             button.gameObject.SetActive(true);
             _songButtons.Add(button);
@@ -82,7 +78,7 @@ public class MenuManager : MonoBehaviour
         }
 
         SongButtonOffset += Input.GetAxis("Mouse ScrollWheel");
-        
+
         // Lerp SongButtonOffset to nearest integer
         SongButtonOffset = Mathf.Lerp(SongButtonOffset, Mathf.Round(SongButtonOffset), Time.deltaTime * 10f);
 
@@ -93,7 +89,7 @@ public class MenuManager : MonoBehaviour
             var button = _songButtons[i];
             button.transform.localPosition = Vector3.Lerp(button.transform.localPosition,
                 new Vector3(0, targetY - i * 3, 0), Time.deltaTime * 10f);
-            
+
             // Turn on outline if button is selected
             button.TryGetComponent<SongTarget>(out var songTarget);
             songTarget.ToggleOutline(i == Mathf.RoundToInt(SongButtonOffset));
@@ -114,9 +110,9 @@ public class MenuManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            SongManager.Instance.currentSongIndex = _songButtons.Count - 1 - (int)_songButtonOffset;
+            SongManager.Instance.currentSongIndex = Mathf.RoundToInt(SongButtonOffset);
             SongManager.Instance.currentSong = SongManager.Instance.GetSongs()[SongManager.Instance.currentSongIndex];
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Game");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
         }
     }
 }

@@ -61,15 +61,15 @@ public class FreeCam : MonoBehaviour
         transform.localRotation = t;
     }
 
-    private void OnGUI()
-    {
-        GUI.Label(new Rect(10, 10, 100, 20), $"X: {_rotationX}");
-        GUI.Label(new Rect(10, 30, 100, 20), $"Y: {_rotationY}");
-    }
+    // private void OnGUI()
+    // {
+    //     GUI.Label(new Rect(10, 10, 100, 20), $"X: {_rotationX}");
+    //     GUI.Label(new Rect(10, 30, 100, 20), $"Y: {_rotationY}");
+    // }
 
     private void Update()
     {
-        Move();
+        // Move();
         Rotate();
     }
 }
