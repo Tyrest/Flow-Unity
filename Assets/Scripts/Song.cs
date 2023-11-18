@@ -22,14 +22,12 @@ public class Song
 
     public Song(string path)
     {
-        Debug.Log(path);
         _path = path;
         LoadSongInfo();
     }
 
     private void LoadSongInfo()
     {
-        Debug.Log(Path.Combine(_path, InfoPath));
         var songInfoLines = File.ReadAllLines(Path.Combine(_path, InfoPath));
         foreach (var line in songInfoLines)
         {

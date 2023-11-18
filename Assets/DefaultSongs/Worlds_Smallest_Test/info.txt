@@ -1,0 +1,5 @@
+Title:World's Smallest Test
+Artist:AJR
+Mapper:Tyresty
+BPM:90.0
+Offset:0

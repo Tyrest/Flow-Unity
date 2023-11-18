@@ -1,0 +1,5 @@
+Title:World's Biggest Idiot
+Artist:AJR
+Mapper:Tyresty
+BPM:90.0
+Offset:0

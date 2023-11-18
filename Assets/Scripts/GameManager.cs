@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
     {
         get
         {
-            if (_instance == null)
+            if (!_instance)
             {
                 _instance = FindObjectOfType<GameManager>();
             }
@@ -42,7 +42,6 @@ public class GameManager : MonoBehaviour
     };
 
     public AudioSource audioSource;
-    public VisualEffect explosion;
 
     public HUD hud;
     public GameObject targetPrefab;
