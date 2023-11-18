@@ -108,9 +108,12 @@ public class MenuManager : MonoBehaviour
 
     private static void StartSong(int index)
     {
+        DontDestroyOnLoad(SongManager.Instance.gameObject);
         SongManager.Instance.currentSongIndex = index;
-        SongManager.Instance.currentSong = SongManager.Instance.GetSongs()[SongManager.Instance.currentSongIndex];
+        SongManager.Instance.currentDifficulty = "intermediate";
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+
+        // Destroy(MenuManager.Instance.gameObject);
     }
 
     private void Update()
