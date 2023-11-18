@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -26,6 +28,7 @@ public class MenuManager : MonoBehaviour
         set => _songButtonOffset = Mathf.Clamp(value, -0.5f, _songButtons.Count - 0.5f);
     }
 
+    public float scrollSpeed = 10f;
     public GameObject buttonPrefab;
     public GameObject quitButton;
     public GameObject optionsButton;
@@ -46,6 +49,12 @@ public class MenuManager : MonoBehaviour
         startButton.gameObject.SetActive(toggle);
     }
 
+    private static UnityEngine.Events.UnityAction CreateStartSongAction(int count)
+    {
+        return () => { StartSong(count); };
+    }
+
+
     public void SongSelect()
     {
         ToggleButtons(false);
@@ -55,6 +64,7 @@ public class MenuManager : MonoBehaviour
             button.transform.localPosition += Vector3.down * (_songButtons.Count * 3);
             button.GetComponentInChildren<TMPro.TextMeshPro>().text = song.Title;
             button.gameObject.SetActive(true);
+            button.GetComponent<SongTarget>().AddInteraction(CreateStartSongAction(_songButtons.Count));
             _songButtons.Add(button);
         });
         _songButtonOffset = 0;
@@ -77,7 +87,7 @@ public class MenuManager : MonoBehaviour
             SongButtonOffset += 1f;
         }
 
-        SongButtonOffset += Input.GetAxis("Mouse ScrollWheel");
+        SongButtonOffset += Input.GetAxis("Mouse ScrollWheel") * scrollSpeed;
 
         // Lerp SongButtonOffset to nearest integer
         SongButtonOffset = Mathf.Lerp(SongButtonOffset, Mathf.Round(SongButtonOffset), Time.deltaTime * 10f);
@@ -96,6 +106,12 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    private static void StartSong(int index)
+    {
+        SongManager.Instance.currentSongIndex = index;
+        SongManager.Instance.currentSong = SongManager.Instance.GetSongs()[SongManager.Instance.currentSongIndex];
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+    }
 
     private void Update()
     {
@@ -110,9 +126,7 @@ public class MenuManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            SongManager.Instance.currentSongIndex = Mathf.RoundToInt(SongButtonOffset);
-            SongManager.Instance.currentSong = SongManager.Instance.GetSongs()[SongManager.Instance.currentSongIndex];
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+            StartSong(Mathf.RoundToInt(SongButtonOffset));
         }
     }
 }
