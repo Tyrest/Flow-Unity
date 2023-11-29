@@ -123,10 +123,10 @@ public class Target : MonoBehaviour
         var clearColor = new Color(textColor.r, textColor.g, textColor.b, 0f);
 
         var elapsedTime = 0f;
-        while (elapsedTime < 0.5f)
+        while (elapsedTime < 0.3f)
         {
             text.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one,
-                (float)Math.Exp(-Math.Pow(2 * (elapsedTime - 0.25f), 2)));
+                (float)Math.Exp(-Math.Pow(3 * (elapsedTime - 0.15f), 2)));
             textTMP.color = Color.Lerp(clearColor, textColor, (float)Math.Exp(-Math.Pow(4 * (elapsedTime - 0.25f), 4)));
             elapsedTime += Time.deltaTime;
             yield return null;

@@ -23,9 +23,12 @@ public class SongManager : MonoBehaviour
     }
 
     public List<string> songDirectories;
-    public Song currentSong;
-    public int currentSongIndex;
 
+    private Song CurrentSong => Songs[currentSongIndex];
+    public int currentSongIndex;
+    public string currentDifficulty;
+
+    private List<Song> Songs => GetSongs();
     private List<Song> _songs;
 
     private void Awake()
@@ -43,6 +46,17 @@ public class SongManager : MonoBehaviour
         return _songs;
 
         IEnumerable<string> GetSubdirectories(string songDirectory) =>
-            Directory.GetDirectories(Path.Combine(songDirectory.Split('/')));
+            Directory.GetDirectories(Path.GetFullPath(Path.Combine(songDirectory.Split('/'))));
+    }
+
+    public Song GetSong()
+    {
+        return CurrentSong;
+    }
+
+    public BeatMap GetBeatMap()
+    {
+        Debug.Log("Loading: " + CurrentSong.Title + " (" + currentDifficulty + ")");
+        return CurrentSong.GetBeatMap(currentDifficulty);
     }
 }

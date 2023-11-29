@@ -1,14 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 // Class to load and the store the information for a beatMap
 public class Song
 {
     private const string InfoPath = "info.txt";
-    private const string AudioPath = "audio.ogg";
+    private const string AudioPath = "audio.mp3";
 
     private readonly string _path;
     public string Title { get; private set; }
@@ -56,13 +59,34 @@ public class Song
         }
     }
 
-    public AudioClip GetAudio()
+    private static async Task<AudioClip> LoadClip(string path)
     {
-        if (_audio == null)
+        AudioClip clip = null;
+        using var uwr = UnityWebRequestMultimedia.GetAudioClip(new Uri(path), AudioType.MPEG);
+        uwr.SendWebRequest();
+
+        try
         {
-            _audio = Resources.Load<AudioClip>(Path.Combine(_path, AudioPath));
+            while (!uwr.isDone) await Task.Delay(5);
+
+            if (uwr.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.ProtocolError)
+                Debug.Log($"{uwr.error}");
+            else
+            {
+                clip = DownloadHandlerAudioClip.GetContent(uwr);
+            }
+        }
+        catch (Exception err)
+        {
+            Debug.Log($"{err.Message}, {err.StackTrace}");
         }
 
+        return clip;
+    }
+
+    public async Task<AudioClip> GetAudio()
+    {
+        _audio ??= await LoadClip(Path.Combine(_path, AudioPath));
         return _audio;
     }
 

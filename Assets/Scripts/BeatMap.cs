@@ -6,20 +6,26 @@ using UnityEngine;
 
 public struct Beat
 {
+    public float x;
+    public float y;
+    public float distance;
     public float beatTime;
-    public int beatType;
-    public int beatLane;
 }
 
 // Holds the information for a map which is a list of beats
 public class BeatMap
 {
+    public List<Beat> Beats => GetBeats();
+    public float offset;
+    public float approachPeriod;
+    
     private readonly string _path;
     private List<Beat> _beats;
 
     public BeatMap(string path)
     {
         _path = path;
+        approachPeriod = 0.5f;
     }
 
     // Get the difficulty from the file name
@@ -32,16 +38,17 @@ public class BeatMap
     private static Beat? ReadLine(string line)
     {
         var beatMapData = line.Split(',');
-        if (beatMapData.Length != 3)
+        if (beatMapData.Length != 4)
         {
             return null;
         }
 
         var beat = new Beat
         {
-            beatTime = float.Parse(beatMapData[0]),
-            beatType = int.Parse(beatMapData[1]),
-            beatLane = int.Parse(beatMapData[2])
+            x = float.Parse(beatMapData[0]),
+            y = float.Parse(beatMapData[1]),
+            distance = float.Parse(beatMapData[2]),
+            beatTime = float.Parse(beatMapData[3])
         };
         return beat;
     }
@@ -49,16 +56,17 @@ public class BeatMap
     // Read the file and parse the beats
     private List<Beat> ReadFile()
     {
-        var beatMapLines = Resources.Load<TextAsset>(_path).text.Split('\n');
+        var beatMapLines = File.ReadAllLines(_path);
         return beatMapLines
             .Select(ReadLine)
             .Where(beat => beat != null)
             .Select(beat => beat.Value)
+            .OrderBy(beat => beat.beatTime)
             .ToList();
     }
 
     // Lazy load the beats
-    public List<Beat> GetBeats()
+    private List<Beat> GetBeats()
     {
         _beats ??= ReadFile();
         return _beats;
