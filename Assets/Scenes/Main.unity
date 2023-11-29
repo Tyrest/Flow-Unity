@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.000055046083, g: 0.00014094963, b: 0.0042733354, a: 1}
+  m_IndirectSpecularColor: {r: 0.0000666903, g: 0.00013897353, b: 0.004276396, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -383,12 +383,13 @@ MonoBehaviour:
   targetPrefab: {fileID: 4166683219462710494, guid: b7297eafe17304e3ab1cd3457b96aad4, type: 3}
   spawnRandom: 1
   minDistance: 10
-  maxDistance: 20
+  maxDistance: 10
   minYSpawnAngle: -15
   maxYSpawnAngle: 15
-  minXSpawnAngle: -30
-  maxXSpawnAngle: 30
+  minXSpawnAngle: -20
+  maxXSpawnAngle: 20
   spawnPeriod: 1
+  graceTime: 0
 --- !u!4 &1155879403
 Transform:
   m_ObjectHideFlags: 0

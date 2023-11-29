@@ -53,13 +53,14 @@ public class GameManager : MonoBehaviour
     public float minXSpawnAngle = -90f;
     public float maxXSpawnAngle = 90f;
     public float spawnPeriod = 1.0f;
-    public float graceTime = 3.0f;
+    public float graceTime = 0.0f;
 
     private Camera _mainCamera;
     private float _spawnTimer;
     private float _songTimer;
     private BeatMap _beatMap;
     private int _beatIndex;
+    private float _songTime;
 
     private int _score;
 
@@ -83,6 +84,7 @@ public class GameManager : MonoBehaviour
             spawnRandom = false;
             _beatMap = SongManager.Instance.GetBeatMap();
             audioSource.clip = await song.GetAudio();
+            _songTime = song.Offset;
         }
     }
 
@@ -149,13 +151,17 @@ public class GameManager : MonoBehaviour
         _songTimer += Time.deltaTime / 2;
 
         if (!audioSource.isPlaying && _songTimer >= 0)
+        {
+            audioSource.time = _songTime;
             audioSource.Play();
-
+        }
+        
         while (_beatIndex < _beatMap.Beats.Count &&
                _songTimer >= _beatMap.Beats[_beatIndex].beatTime - _beatMap.approachPeriod)
         {
             var beat = _beatMap.Beats[_beatIndex];
-            SpawnTarget(beat.x, beat.y, beat.distance);
+            SpawnRandom();
+            // SpawnTarget(beat.x, beat.y, beat.distance);
             _beatIndex += 1;
         }
 
