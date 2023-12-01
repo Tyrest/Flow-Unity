@@ -5,6 +5,7 @@ using System.Threading;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Target : MonoBehaviour
 {
@@ -16,8 +17,8 @@ public class Target : MonoBehaviour
     public float greatThreshold = 0.2f;
     public float goodThreshold = 0.3f; // Also determines fade out time
     public Color outlineColor = Color.white;
-
-    private GameObject _childObject;
+    public GameObject childObject;
+    
     private Color _startingOutlineColor;
     private float _time;
     private bool _hit;
@@ -26,43 +27,22 @@ public class Target : MonoBehaviour
 
     private MeshRenderer _targetMeshRenderer;
     private MeshRenderer _childMeshRenderer;
-    private Outline _childOutline;
-
+    private Material _childMaterial;
     private void Awake()
     {
         _targetMeshRenderer = target.GetComponent<MeshRenderer>();
         _startingOutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, 0.0f);
         // Create a child object with a MeshFilter
-        CreateChildObject();
+        SetupChildObject();
 
         _time = 0.0f;
     }
 
-    private void CreateChildObject()
+    private void SetupChildObject()
     {
-        // Create a child GameObject
-        _childObject = new GameObject("TimingObject")
-            { transform = { parent = target.transform, localPosition = Vector3.zero } };
-
-        var meshFilter = _childObject.AddComponent<MeshFilter>();
-        meshFilter.mesh = target.GetComponent<MeshFilter>().sharedMesh;
-
-        var mpb = new MaterialPropertyBlock();
-        var color = target.GetComponent<MeshRenderer>().sharedMaterial.color;
-        color.a = 0.0f;
-        mpb.SetColor(Shader.PropertyToID("_Color"), color);
-
-        var meshRenderer = _childObject.AddComponent<MeshRenderer>();
-        meshRenderer.material = target.GetComponent<MeshRenderer>().sharedMaterial;
-        meshRenderer.SetPropertyBlock(mpb);
-
-        var outline = _childObject.AddComponent<Outline>();
-        outline.OutlineMode = Outline.Mode.OutlineAll;
-        outline.OutlineColor = _startingOutlineColor;
-        outline.OutlineWidth = 5f;
-
-        _childMeshRenderer = _childObject.GetComponent<MeshRenderer>();
-        _childOutline = _childObject.GetComponent<Outline>();
+        childObject.transform.LookAt(Vector3.zero, Vector3.up);
+        childObject.transform.Rotate(0f, 180f, 0f);
+        _childMaterial = childObject.GetComponent<MeshRenderer>().material;
     }
 
     private void OnDrawGizmos()
@@ -95,9 +75,8 @@ public class Target : MonoBehaviour
             m.color = new Color(m.color.r, m.color.g, m.color.b, newAlpha);
 
             elapsedTime += Time.deltaTime;
-
-            _childOutline.OutlineColor =
-                new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha);
+            
+            _childMaterial.SetColor(Shader.PropertyToID("_Color"), new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha));
 
             yield return null;
         }
@@ -164,9 +143,9 @@ public class Target : MonoBehaviour
             if (_time < scalePeriod)
             {
                 var scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
-                _childObject.transform.localScale = scaleValue;
+                childObject.transform.localScale = scaleValue * 0.5f;
                 var outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
-                _childOutline.OutlineColor = outlineColorValue;
+                _childMaterial.SetColor(Shader.PropertyToID("_Color"), outlineColorValue);
             }
             else if (!_pastPeak)
             {

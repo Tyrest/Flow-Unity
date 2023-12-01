@@ -1,0 +1,5 @@
+Title:Padoru / Padoru
+Artist:Turbo
+Mapper:Tyresty
+BPM:190.0
+Offset:0

@@ -47,7 +47,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe084188fa6ef45d59dcb6001523fecb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  songIndex: 0
   outline: {fileID: 1300653014528934013}
   interact: {fileID: 4845007428136753305}
 --- !u!1 &6706176904489890905
@@ -376,7 +375,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8325564559428277919}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 0, z: 0}
+  m_LocalPosition: {x: 5, y: 0, z: 1.01}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children: []
