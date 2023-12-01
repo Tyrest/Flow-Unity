@@ -131,6 +131,11 @@ public class GameManager : MonoBehaviour
         else HandleSongSpawn();
 
         CheckClick();
+        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+        }
     }
 
     private void HandleRandomSpawn()
@@ -155,7 +160,7 @@ public class GameManager : MonoBehaviour
             audioSource.time = _songTime;
             audioSource.Play();
         }
-        
+
         while (_beatIndex < _beatMap.Beats.Count &&
                _songTimer >= _beatMap.Beats[_beatIndex].beatTime - _beatMap.approachPeriod)
         {
