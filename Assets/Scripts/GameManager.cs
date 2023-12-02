@@ -165,8 +165,8 @@ public class GameManager : MonoBehaviour
                _songTimer >= _beatMap.Beats[_beatIndex].beatTime - _beatMap.approachPeriod)
         {
             var beat = _beatMap.Beats[_beatIndex];
-            SpawnRandom();
-            // SpawnTarget(beat.x, beat.y, beat.distance);
+            // SpawnRandom();
+            SpawnTarget(beat.x, beat.y, beat.distance);
             _beatIndex += 1;
         }
 

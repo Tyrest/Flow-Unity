@@ -32,7 +32,6 @@ public class Target : MonoBehaviour
     {
         _targetMeshRenderer = target.GetComponent<MeshRenderer>();
         _startingOutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, 0.0f);
-        // Create a child object with a MeshFilter
         SetupChildObject();
 
         _time = 0.0f;
@@ -42,6 +41,7 @@ public class Target : MonoBehaviour
     {
         childObject.transform.LookAt(Vector3.zero, Vector3.up);
         childObject.transform.Rotate(0f, 180f, 0f);
+        _childMeshRenderer = childObject.GetComponent<MeshRenderer>();
         _childMaterial = childObject.GetComponent<MeshRenderer>().material;
     }
 
