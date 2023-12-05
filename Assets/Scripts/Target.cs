@@ -28,10 +28,12 @@ public class Target : MonoBehaviour
     private MeshRenderer _targetMeshRenderer;
     private MeshRenderer _childMeshRenderer;
     private Material _childMaterial;
-    private void Awake()
+    private void Start()
     {
         _targetMeshRenderer = target.GetComponent<MeshRenderer>();
         _startingOutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, 0.0f);
+        transform.LookAt(Vector3.zero, Vector3.up);
+        transform.Rotate(0f, 180f, 0f);
         SetupChildObject();
 
         _time = 0.0f;
@@ -39,8 +41,7 @@ public class Target : MonoBehaviour
 
     private void SetupChildObject()
     {
-        childObject.transform.LookAt(Vector3.zero, Vector3.up);
-        childObject.transform.Rotate(0f, 180f, 0f);
+        childObject.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         _childMeshRenderer = childObject.GetComponent<MeshRenderer>();
         _childMaterial = childObject.GetComponent<MeshRenderer>().material;
     }
@@ -142,6 +143,7 @@ public class Target : MonoBehaviour
         {
             if (_time < scalePeriod)
             {
+                transform.localScale = Vector3.Lerp(new Vector3(1f, 1f, 0f), Vector3.one, _time / scalePeriod);
                 var scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
                 childObject.transform.localScale = scaleValue * 0.5f;
                 var outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
