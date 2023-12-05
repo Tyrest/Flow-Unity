@@ -132,10 +132,10 @@ public class GameManager : MonoBehaviour
 
         CheckClick();
         
-        // if (Input.GetKeyDown(KeyCode.Escape))
-        // {
-        //     UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
-        // }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+        }
     }
 
     private void HandleRandomSpawn()
@@ -146,10 +146,10 @@ public class GameManager : MonoBehaviour
         _spawnTimer = 0f;
     }
 
-    private void OnGUI()
-    {
-        GUI.Label(new Rect(10, 10, 100, 20), $"X: {_songTimer}");
-    }
+    // private void OnGUI()
+    // {
+    //     GUI.Label(new Rect(10, 10, 100, 20), $"X: {_songTimer}");
+    // }
 
     private void HandleSongSpawn()
     {
