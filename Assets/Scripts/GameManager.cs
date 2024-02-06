@@ -132,10 +132,10 @@ public class GameManager : MonoBehaviour
 
         CheckClick();
         
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
-        }
+        // if (Input.GetKeyDown(KeyCode.Escape))
+        // {
+        //     UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+        // }
     }
 
     private void HandleRandomSpawn()

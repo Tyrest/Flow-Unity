@@ -18,6 +18,7 @@ public class Target : MonoBehaviour
     public float goodThreshold = 0.3f; // Also determines fade out time
     public Color outlineColor = Color.white;
     public GameObject childObject;
+    public Vector3 localPosStart = new Vector3(0f, 0f, 100f);
     
     private Color _startingOutlineColor;
     private float _time;
@@ -34,6 +35,7 @@ public class Target : MonoBehaviour
         _startingOutlineColor = new Color(outlineColor.r, outlineColor.g, outlineColor.b, 0.0f);
         transform.LookAt(Vector3.zero, Vector3.up);
         transform.Rotate(0f, 180f, 0f);
+        target.transform.localPosition = localPosStart;
         SetupChildObject();
 
         _time = 0.0f;
@@ -143,7 +145,6 @@ public class Target : MonoBehaviour
         {
             if (_time < scalePeriod)
             {
-                transform.localScale = Vector3.Lerp(new Vector3(1f, 1f, 0f), Vector3.one, _time / scalePeriod);
                 var scaleValue = Vector3.Lerp(Vector3.one * scaleStart, Vector3.one, _time / scalePeriod);
                 childObject.transform.localScale = scaleValue * 0.5f;
                 var outlineColorValue = Color.Lerp(_startingOutlineColor, outlineColor, _time * 2.0f / scalePeriod);
@@ -154,6 +155,9 @@ public class Target : MonoBehaviour
                 _pastPeak = true;
                 StartCoroutine(FadeOutCoroutine(goodThreshold));
             }
+            // Moves target towards player while scaling down so the target's size is constant
+            target.transform.localScale = Vector3.Lerp(Vector3.one * 2, Vector3.one, _time / (scalePeriod + goodThreshold));
+            target.transform.localPosition = Vector3.Lerp(localPosStart, Vector3.zero, _time / (scalePeriod + goodThreshold));
         }
 
         _time += Time.deltaTime;
