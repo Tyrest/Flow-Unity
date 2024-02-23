@@ -35,6 +35,6 @@ public class HUD : MonoBehaviour
 
     public void UpdateScore(int score)
     {
-        scoreText.text = $"{score}";
+        scoreText.text = score < 0 ? "" : $"{score}";
     }
 }

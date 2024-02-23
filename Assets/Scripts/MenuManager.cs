@@ -4,6 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
+
+enum MenuState
+{
+    Play,
+    Title,
+    SongSelect,
+    Options
+}
 
 public class MenuManager : MonoBehaviour
 {
@@ -30,26 +39,33 @@ public class MenuManager : MonoBehaviour
 
     public float scrollSpeed = 10f;
     public GameObject buttonPrefab;
-    public GameObject quitButton;
-    public GameObject optionsButton;
-    public GameObject startButton;
+    public GameObject titleButtons;
+    public GameObject songSelectButtons;
+    public GameObject optionsButtons;
     private List<GameObject> _songButtons;
     private float _songButtonOffset;
+    private MenuState _menuState;
 
     private void Awake()
     {
         _instance = this;
         _songButtons = new List<GameObject>();
     }
-
-    private void ToggleButtons(bool toggle)
+    
+    private void Start()
     {
-        quitButton.gameObject.SetActive(toggle);
-        optionsButton.gameObject.SetActive(toggle);
-        startButton.gameObject.SetActive(toggle);
+        ToggleMenuState(MenuState.Title);
     }
 
-    private static UnityEngine.Events.UnityAction CreateStartSongAction(int count)
+    private void ToggleMenuState(MenuState state)
+    {
+        _menuState = state;
+        titleButtons.SetActive(state == MenuState.Title);
+        songSelectButtons.SetActive(state == MenuState.SongSelect);
+        optionsButtons.SetActive(state == MenuState.Options);
+    }
+
+    private UnityEngine.Events.UnityAction CreateStartSongAction(int count)
     {
         return () => { StartSong(count); };
     }
@@ -57,7 +73,7 @@ public class MenuManager : MonoBehaviour
 
     public void SongSelect()
     {
-        ToggleButtons(false);
+        ToggleMenuState(MenuState.SongSelect);
         SongManager.Instance.GetSongs().ForEach(song =>
         {
             var button = Instantiate(buttonPrefab, transform);
@@ -65,6 +81,7 @@ public class MenuManager : MonoBehaviour
             button.GetComponentInChildren<TMPro.TextMeshPro>().text = song.Title;
             button.gameObject.SetActive(true);
             button.GetComponent<SongTarget>().AddInteraction(CreateStartSongAction(_songButtons.Count));
+            button.transform.parent = songSelectButtons.transform;
             _songButtons.Add(button);
         });
         _songButtonOffset = 0;
@@ -106,12 +123,15 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    private static void StartSong(int index)
+    private void StartSong(int index)
     {
-        DontDestroyOnLoad(SongManager.Instance.gameObject);
+        ToggleMenuState(MenuState.Play);
         SongManager.Instance.currentSongIndex = index;
         SongManager.Instance.currentDifficulty = "intermediate";
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+        GameManager.Instance.StartSong();
+        
+        // DontDestroyOnLoad(SongManager.Instance.gameObject);
+        // UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
 
         // Destroy(MenuManager.Instance.gameObject);
     }
@@ -120,9 +140,18 @@ public class MenuManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            ToggleButtons(true);
-            _songButtons.ForEach(Destroy);
-            _songButtons.Clear();
+            if (_menuState == MenuState.Title)
+            {
+                QuitGame();
+            }
+            else if (_menuState == MenuState.SongSelect)
+            {
+                ToggleMenuState(MenuState.Title);
+            }
+            else
+            {
+                ToggleMenuState(MenuState.SongSelect);
+            }
         }
 
         HandleSongButtons();

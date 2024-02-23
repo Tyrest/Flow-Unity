@@ -61,6 +61,7 @@ public class GameManager : MonoBehaviour
     private BeatMap _beatMap;
     private int _beatIndex;
     private float _songTime;
+    private bool _playing;
 
     private int _score;
 
@@ -70,10 +71,16 @@ public class GameManager : MonoBehaviour
         _songTimer = -graceTime;
     }
 
-    private async void Start()
+    private void Start()
     {
         _mainCamera = Camera.main;
-        hud.UpdateScore(_score);
+        hud.UpdateScore(-1);
+        _playing = false;
+    }
+    
+    public async void StartSong()
+    {
+        _playing = true;
         var song = SongManager.Instance.GetSong();
         if (song == null)
         {
@@ -127,15 +134,21 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (!_playing)
+        {
+            return;
+        }
         if (spawnRandom) HandleRandomSpawn();
         else HandleSongSpawn();
 
         CheckClick();
         
-        // if (Input.GetKeyDown(KeyCode.Escape))
-        // {
-        //     UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
-        // }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            _playing = false;
+            audioSource.Stop();
+            hud.UpdateScore(-1);
+        }
     }
 
     private void HandleRandomSpawn()
