@@ -9,6 +9,7 @@ using UnityEngine.UI;
 enum MenuState
 {
     Play,
+    Paused,
     Title,
     SongSelect,
     Options
@@ -42,6 +43,7 @@ public class MenuManager : MonoBehaviour
     public GameObject titleButtons;
     public GameObject songSelectButtons;
     public GameObject optionsButtons;
+    public GameObject pauseButtons;
     private List<GameObject> _songButtons;
     private float _songButtonOffset;
     private MenuState _menuState;
@@ -63,6 +65,7 @@ public class MenuManager : MonoBehaviour
         titleButtons.SetActive(state == MenuState.Title);
         songSelectButtons.SetActive(state == MenuState.SongSelect);
         optionsButtons.SetActive(state == MenuState.Options);
+        pauseButtons.SetActive(state == MenuState.Paused);
     }
 
     private UnityEngine.Events.UnityAction CreateStartSongAction(int count)
@@ -148,9 +151,15 @@ public class MenuManager : MonoBehaviour
             {
                 ToggleMenuState(MenuState.Title);
             }
-            else
+            else if (_menuState == MenuState.Play)
             {
-                ToggleMenuState(MenuState.SongSelect);
+                GameManager.Instance.Pause();
+                ToggleMenuState(MenuState.Paused);
+            }
+            else if (_menuState == MenuState.Paused)
+            {
+                GameManager.Instance.Resume();
+                ToggleMenuState(MenuState.Play);
             }
         }
 

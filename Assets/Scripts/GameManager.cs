@@ -96,6 +96,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void Pause()
+    {
+        _playing = false;
+        audioSource.Pause();
+    }
+    
+    public void Resume()
+    {
+        _playing = true;
+        audioSource.Play();
+    }
+
     private void SpawnTarget(float x, float y, float distance)
     {
         var target = Instantiate(targetPrefab, this.transform);
