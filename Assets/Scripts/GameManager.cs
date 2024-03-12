@@ -57,10 +57,9 @@ public class GameManager : MonoBehaviour
 
     private Camera _mainCamera;
     private float _spawnTimer;
-    private float _songTimer;
+    private float _songTime;
     private BeatMap _beatMap;
     private int _beatIndex;
-    private float _songTime;
     private bool _playing;
 
     private int _score;
@@ -68,7 +67,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        _songTimer = -graceTime;
+        _songTime = -graceTime;
     }
 
     private void Start()
@@ -80,6 +79,8 @@ public class GameManager : MonoBehaviour
     
     public async void StartSong()
     {
+        _songTime = -graceTime;
+        _beatIndex = 0;
         _playing = true;
         var song = SongManager.Instance.GetSong();
         if (song == null)
@@ -91,7 +92,7 @@ public class GameManager : MonoBehaviour
             spawnRandom = false;
             _beatMap = SongManager.Instance.GetBeatMap();
             audioSource.clip = await song.GetAudio();
-            _songTime = song.Offset;
+            audioSource.time = song.Offset;
         }
     }
 
@@ -148,6 +149,10 @@ public class GameManager : MonoBehaviour
             _playing = false;
             audioSource.Stop();
             hud.UpdateScore(-1);
+            foreach (Transform child in transform)
+            {
+                Destroy(child.gameObject);
+            }
         }
     }
 
@@ -159,23 +164,18 @@ public class GameManager : MonoBehaviour
         _spawnTimer = 0f;
     }
 
-    // private void OnGUI()
-    // {
-    //     GUI.Label(new Rect(10, 10, 100, 20), $"X: {_songTimer}");
-    // }
-
     private void HandleSongSpawn()
     {
-        _songTimer += Time.deltaTime / 2;
+        _songTime += Time.deltaTime / 2;
+        // Debug.Log(_songTime);
 
-        if (!audioSource.isPlaying && _songTimer >= 0)
+        if (!audioSource.isPlaying && _songTime >= 0)
         {
-            audioSource.time = _songTime;
             audioSource.Play();
         }
 
         while (_beatIndex < _beatMap.Beats.Count &&
-               _songTimer >= _beatMap.Beats[_beatIndex].beatTime - _beatMap.approachPeriod)
+               _songTime >= _beatMap.Beats[_beatIndex].beatTime - _beatMap.approachPeriod)
         {
             var beat = _beatMap.Beats[_beatIndex];
             // SpawnRandom();
@@ -183,6 +183,6 @@ public class GameManager : MonoBehaviour
             _beatIndex += 1;
         }
 
-        _songTimer += Time.deltaTime / 2;
+        _songTime += Time.deltaTime / 2;
     }
 }
