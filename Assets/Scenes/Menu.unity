@@ -1080,7 +1080,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioSource: {fileID: 154445092}
-  hud: {fileID: 0}
+  hud: {fileID: 142597279}
   targetPrefab: {fileID: 4166683219462710494, guid: b7297eafe17304e3ab1cd3457b96aad4, type: 3}
   spawnRandom: 1
   minDistance: 10
