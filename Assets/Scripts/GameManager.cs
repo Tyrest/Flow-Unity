@@ -79,6 +79,8 @@ public class GameManager : MonoBehaviour
     
     public async void StartSong()
     {
+        _score = 0;
+        hud.UpdateScore(0);
         _songTime = -graceTime;
         _beatIndex = 0;
         _playing = true;
@@ -104,8 +106,15 @@ public class GameManager : MonoBehaviour
     
     public void Resume()
     {
+        hud.UpdateScore(_score);
         _playing = true;
+        audioSource.time = _songTime + SongManager.Instance.GetSong().Offset;
         audioSource.Play();
+    }
+
+    public void Retry()
+    {
+        StartSong();
     }
 
     private void SpawnTarget(float x, float y, float distance)

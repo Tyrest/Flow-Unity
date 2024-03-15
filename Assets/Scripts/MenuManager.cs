@@ -53,7 +53,7 @@ public class MenuManager : MonoBehaviour
         _instance = this;
         _songButtons = new List<GameObject>();
     }
-    
+
     private void Start()
     {
         ToggleMenuState(MenuState.Title);
@@ -73,7 +73,6 @@ public class MenuManager : MonoBehaviour
         return () => { StartSong(count); };
     }
 
-
     public void SongSelect()
     {
         ToggleMenuState(MenuState.SongSelect);
@@ -90,6 +89,22 @@ public class MenuManager : MonoBehaviour
         _songButtonOffset = 0;
     }
 
+    public void Resume()
+    {
+        GameManager.Instance.Resume();
+        ToggleMenuState(MenuState.Play);
+    }
+    public void Retry()
+    {
+        GameManager.Instance.Retry();
+        ToggleMenuState(MenuState.Play);
+    }
+    
+    public void QuitSong()
+    {
+        ToggleMenuState(MenuState.SongSelect);
+    }
+    
     public void QuitGame()
     {
         Application.Quit();
@@ -124,6 +139,11 @@ public class MenuManager : MonoBehaviour
             button.TryGetComponent<SongTarget>(out var songTarget);
             songTarget.ToggleOutline(i == Mathf.RoundToInt(SongButtonOffset));
         }
+        
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            StartSong(Mathf.RoundToInt(SongButtonOffset));
+        }
     }
 
     private void StartSong(int index)
@@ -132,42 +152,37 @@ public class MenuManager : MonoBehaviour
         SongManager.Instance.currentSongIndex = index;
         SongManager.Instance.currentDifficulty = "intermediate";
         GameManager.Instance.StartSong();
-        
-        // DontDestroyOnLoad(SongManager.Instance.gameObject);
-        // UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+    }
 
-        // Destroy(MenuManager.Instance.gameObject);
+    private void HandleEscape()
+    {
+        switch (_menuState)
+        {
+            case MenuState.Title:
+                QuitGame();
+                break;
+            case MenuState.SongSelect:
+                ToggleMenuState(MenuState.Title);
+                break;
+            case MenuState.Play:
+                ToggleMenuState(MenuState.Paused);
+                GameManager.Instance.Pause();
+                break;
+            case MenuState.Paused:
+                ToggleMenuState(MenuState.Play);
+                GameManager.Instance.Resume();
+                break;
+            case MenuState.Options:
+                ToggleMenuState(MenuState.Title);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (_menuState == MenuState.Title)
-            {
-                QuitGame();
-            }
-            else if (_menuState == MenuState.SongSelect)
-            {
-                ToggleMenuState(MenuState.Title);
-            }
-            else if (_menuState == MenuState.Play)
-            {
-                GameManager.Instance.Pause();
-                ToggleMenuState(MenuState.Paused);
-            }
-            else if (_menuState == MenuState.Paused)
-            {
-                GameManager.Instance.Resume();
-                ToggleMenuState(MenuState.Play);
-            }
-        }
-
-        HandleSongButtons();
-
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            StartSong(Mathf.RoundToInt(SongButtonOffset));
-        }
+        if (Input.GetKeyDown(KeyCode.Escape)) HandleEscape();
+        if (_menuState == MenuState.SongSelect) HandleSongButtons();
     }
 }
