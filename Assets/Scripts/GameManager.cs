@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour
     private int _beatIndex;
     private bool _playing;
 
-    private int _score;
+    public int Score { get; private set; }
 
     private void Awake()
     {
@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
     
     public async void StartSong()
     {
-        _score = 0;
+        Score = 0;
         hud.UpdateScore(0);
         _songTime = -graceTime;
         _beatIndex = 0;
@@ -106,7 +106,7 @@ public class GameManager : MonoBehaviour
     
     public void Resume()
     {
-        hud.UpdateScore(_score);
+        hud.UpdateScore(Score);
         _playing = true;
         audioSource.time = _songTime + SongManager.Instance.GetSong().Offset;
         audioSource.Play();
@@ -150,8 +150,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        _score += _scoreMapping[target.Hit()];
-        hud.UpdateScore(_score);
+        Score += _scoreMapping[target.Hit()];
+        hud.UpdateScore(Score);
     }
 
     private void Update()
@@ -188,7 +188,6 @@ public class GameManager : MonoBehaviour
     private void HandleSongSpawn()
     {
         _songTime += Time.deltaTime / 2;
-        // Debug.Log(_songTime);
 
         if (!audioSource.isPlaying && _songTime >= 0)
         {
@@ -199,9 +198,15 @@ public class GameManager : MonoBehaviour
                _songTime >= _beatMap.Beats[_beatIndex].beatTime - _beatMap.approachPeriod)
         {
             var beat = _beatMap.Beats[_beatIndex];
-            // SpawnRandom();
             SpawnTarget(beat.x, beat.y, beat.distance);
             _beatIndex += 1;
+        }
+        if (_beatIndex >= _beatMap.Beats.Count && transform.childCount == 0)
+        {
+            _playing = false;
+            audioSource.Stop();
+            hud.UpdateScore(-1);
+            MenuManager.Instance.EndSong();
         }
 
         _songTime += Time.deltaTime / 2;

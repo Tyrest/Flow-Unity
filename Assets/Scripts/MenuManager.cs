@@ -6,13 +6,14 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-enum MenuState
+internal enum MenuState
 {
     Play,
     Paused,
     Title,
     SongSelect,
-    Options
+    Options,
+    Results
 }
 
 public class MenuManager : MonoBehaviour
@@ -44,6 +45,7 @@ public class MenuManager : MonoBehaviour
     public GameObject songSelectButtons;
     public GameObject optionsButtons;
     public GameObject pauseButtons;
+    public GameObject resultsButtons;
     private List<GameObject> _songButtons;
     private float _songButtonOffset;
     private MenuState _menuState;
@@ -66,6 +68,7 @@ public class MenuManager : MonoBehaviour
         songSelectButtons.SetActive(state == MenuState.SongSelect);
         optionsButtons.SetActive(state == MenuState.Options);
         pauseButtons.SetActive(state == MenuState.Paused);
+        resultsButtons.SetActive(state == MenuState.Results);
     }
 
     private UnityEngine.Events.UnityAction CreateStartSongAction(int count)
@@ -154,6 +157,12 @@ public class MenuManager : MonoBehaviour
         GameManager.Instance.StartSong();
     }
 
+    public void EndSong()
+    {
+        ResultsManager.Instance.ShowResults(GameManager.Instance.Score);
+        ToggleMenuState(MenuState.Results);
+    }
+
     private void HandleEscape()
     {
         switch (_menuState)
@@ -173,6 +182,9 @@ public class MenuManager : MonoBehaviour
                 GameManager.Instance.Resume();
                 break;
             case MenuState.Options:
+                ToggleMenuState(MenuState.Title);
+                break;
+            case MenuState.Results:
                 ToggleMenuState(MenuState.Title);
                 break;
             default:
